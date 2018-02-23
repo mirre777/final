@@ -11,3 +11,7 @@ canvas {
     left: 50vw;
     transform: translateX(-50%) translateY(-50%);
 }
+div {
+border-radius: 10px;
+padding: 3px;
+}

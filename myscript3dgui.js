@@ -1,22 +1,44 @@
 var flock;
-// var img;
+var myColor = '#67dcec';
+var myRadius = 10;
+var myHeight = 20;
+// var visible = true;
+var gui;
+
 
 //SETUP_________________________________________
 
 function setup() {
     createCanvas(windowWidth,windowHeight, WEBGL);
-    // createP("look at my flock of birds")
-    // img = loadImage("donut.png");
+
+
+//create GUI
+
+    //define myFill here?
+
+    sliderRange(0.5, 20, 1);
+    sliderRange(10, 150, 1);
+    sliderRange(10, 150, 1);
+
+    gui = createGui('Controls');
+
+    gui.addGlobals('myColor', 'myRadius', 'myHeight', 'orbitControl');
+
+    // noLoop();
+
+
 
 //new instance of Flock constructor
     flock = new Flock();
-//initial set of boids
-    for (var i = 0; i < 40; i++) {
+    //initial set of boids
+    for (var i = 0; i < 20; i++) {
         var b = new Boid(0, 0, 0); //locate in canvas where they are generated
-        console.log(' windowWidth: ', windowWidth);
-        console.log('windowHeight: ', windowHeight);
+        // var b = new Boid(10, 10, -2000); //locate in canvas where they are generated
+        // console.log(' windowWidth: ', windowWidth);
+        // console.log('windowHeight: ', windowHeight);
         flock.addBoid(b);
     }
+
 }
 
 
@@ -24,11 +46,39 @@ function setup() {
 
 
 
-//RUN___________________________________________
+//DRAW___________________________________________
 
 function draw() {
-    background(51)
+    background(51);
+
+//orbitcontrol
+    var radius = width * 1.5;
+
+    orbitControl();
+
+//objects in the scene
+  normalMaterial();
+  translate(0, 0, -600);
+  for(var i = 0; i <= 12; i++){
+    for(var j = 0; j <= 12; j++){
+      push();
+      var a = j/12 * PI;
+      var b = i/12 * PI;
+      translate(sin(2 * a) * radius * sin(b), cos(b) * radius / 2 , cos(2 * a) * radius * sin(b));
+      if(j%2 === 0){
+        sphere(30, 30);
+      }else{
+        sphere(30, 30);
+      }
+      pop();
+    }
+  }
+
+
+//starts flock, keeps looping
     flock.run();
+
+
 }
 
 
@@ -39,12 +89,14 @@ function draw() {
 //ALL RULES_____________________________________
 
 //to the arrayof boids, push a new boid
+function mouseClicked() {
+    flock.addBoid(new Boid(pmouseX - width/2, pmouseY - height/2));
+    // flock.addBoid(new Boid(mouseX, mouseY, -2000));
+    console.log('mouse x,y: ', pmouseX, pmouseY);
+}
 function mouseDragged() {
     flock.addBoid(new Boid(pmouseX - width/2, pmouseY - height/2));
-    console.log('mouse x,y: ', mouseX, mouseY);
 }
-
-
 
 
 //FLOCK_________________________________________
@@ -78,9 +130,11 @@ Flock.prototype.addBoid = function(b) {
 function Boid(x,y,z) {
     this.acceleration = createVector(0,0,0);
     this.velocity = createVector(random(-1,1), random(-1,1), random(-1,1));
+    // console.log('this.velocity: ', this.velocity);
     this.position = createVector(x,y,z);
-    this.r = 3.0; //size
-    this.maxspeed = 5;
+    // console.log('this.position: ', this.position);
+    this.r = 1.0; //size
+    this.maxspeed = 1.5;
     this.maxforce =  0.05 //max steering force
 }
 
@@ -154,31 +208,31 @@ Boid.prototype.seek = function(target) {
 
 Boid.prototype.render = function() {
 //give boid a shape and rotate the front in direction of seek
-    var theta = this.velocity.heading() + radians(90);
-    fill('white');
+
+    var theta = this.velocity.heading(); //+ radians(90);
+    fill(myColor);
     stroke(200);
     push();
     translate(this.position.x, this.position.y, this.position.z);
-    // console.log('this.position.x and y: ', this.position.x, this.position.y);
-    rotateZ(theta);
+    // rotate(theta);
     rotateX(theta);
     rotateY(theta);
-    // texture(img);
-    torus(20, 10, 40);
+    rotateZ(theta);
+    beginShape();
+    // cone(myRadius,myHeight,20);
+    // sphere(20);
+    // ellipsoid(20, 20, 40)
+    vertex(0, -this.r*8, 1);
+    vertex(-this.r*4, this.r*8, 1);
+    vertex(this.r*4, this.r*8, 1);
+    endShape(CLOSE);
     pop();
+
 }
 
 Boid.prototype.borders = function() {
-    // console.log('in borders');
-//radius has a width and height
-    // if (this.position.x < -this.r) this.position.x = width + this.r;
-    // if (this.position.y < -this.r) this.position.y = height + this.r;
-    // if (this.position.z < -1000) this.position.z = 0;
+// console.log('in borders');
 
-
-    // if (this.position.x > width +this.r) this.position.x = -this.r;
-    // if (this.position.y > height +this.r) this.position.y = -this.r;
-    // if (this.position.z > 0 +this.r) this.position.y = this.e;
 }
 
 
@@ -191,7 +245,7 @@ Boid.prototype.borders = function() {
 
 //SEPARATION: avoidance (of other boids)
 Boid.prototype.separate = function(boids) {
-    var desiredseparation = 50.0;
+    var desiredseparation = 35.0;
     var steer = createVector(0,0,0);
     var count = 0;
 //for every boidin the arraym check if it's TOO CLOSE (closer than 25.0)
@@ -231,7 +285,7 @@ Boid.prototype.separate = function(boids) {
 
 
 Boid.prototype.align = function(boids) {
-    var neighbordist = 70;
+    var neighbordist = 50;
     var sum = createVector(0,0,0);
     var count = 0;
 //for each boid in the system, calculate the distance between this boid and every boid in the array
@@ -269,7 +323,7 @@ Boid.prototype.align = function(boids) {
 
 //calculate steer to go towards average location of group (center)
 Boid.prototype.cohesion = function(boids) {
-    var neighbordist = 80;
+    var neighbordist = 50;
     var sum = createVector(0,0,0);
     var count = 0;
 //for each boid in the array check the difference in position between this boid and all other boids in the array

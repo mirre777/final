@@ -84,7 +84,7 @@ function Boid(x,y,z) {
     // console.log('this.velocity: ', this.velocity);
     this.position = createVector(x,y,z);
     // console.log('this.position: ', this.position);
-    this.r = 20.0; //size
+    this.r = 10.0; //size
     this.maxspeed = 3;
     this.maxforce =  0.05 //max steering force
 }
@@ -160,19 +160,19 @@ Boid.prototype.seek = function(target) {
 Boid.prototype.render = function() {
 //give boid a shape and rotate the front in direction of seek
 
-    var theta = this.velocity.heading() //+ radians(90);
-    fill('green');
+    var theta = this.velocity.heading(); //+ radians(90);
     stroke(200);
+    fill('green');
     push();
-    translate(this.position.x, this.position.y, this.position.z);
     console.log('this: ', this);
+    translate(this.position.x, this.position.y, this.position.z);
     // rotate(theta);
     rotateX(theta);
     rotateY(theta);
     rotateZ(theta);
-    cone(10,80);
     // beginShape();
-    // sphere(20);
+    // cone(10,80);
+    sphere(20);
     // vertex(0, -this.r*8, 1);
     // vertex(-this.r*4, this.r*8, 1);
     // vertex(this.r*4, this.r*8, 1);
@@ -224,7 +224,7 @@ Boid.prototype.borders = function() {
 
 //SEPARATION: avoidance (of other boids)
 Boid.prototype.separate = function(boids) {
-    var desiredseparation = 50.0;
+    var desiredseparation = 25.0;
     var steer = createVector(0,0,0);
     var count = 0;
 //for every boidin the arraym check if it's TOO CLOSE (closer than 25.0)
@@ -264,7 +264,7 @@ Boid.prototype.separate = function(boids) {
 
 
 Boid.prototype.align = function(boids) {
-    var neighbordist = 70;
+    var neighbordist = 50;
     var sum = createVector(0,0,0);
     var count = 0;
 //for each boid in the system, calculate the distance between this boid and every boid in the array
@@ -302,7 +302,7 @@ Boid.prototype.align = function(boids) {
 
 //calculate steer to go towards average location of group (center)
 Boid.prototype.cohesion = function(boids) {
-    var neighbordist = 80;
+    var neighbordist = 50;
     var sum = createVector(0,0,0);
     var count = 0;
 //for each boid in the array check the difference in position between this boid and all other boids in the array
